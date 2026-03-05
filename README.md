@@ -6,7 +6,7 @@
 
 AI code review agent that detects dangerous patterns in LLM-generated code.
 
-Mastiff analyzes git diffs using the Claude API to detect production-risk patterns across four categories — blocking/deadlocks, race conditions, performance degradation, and resource leaks — scoring each finding by severity and confidence.
+Mastiff analyzes git diffs using the Claude or OpenAI API to detect production-risk patterns across five categories — blocking/deadlocks, race conditions, performance degradation, resource leaks, and security vulnerabilities — scoring each finding by severity and confidence.
 
 ## Why Mastiff?
 
@@ -27,6 +27,7 @@ Traditional linters catch syntax and style issues. Mastiff focuses specifically 
 | Race Condition | Shared mutable state without synchronization, TOCTOU | Global variable from multiple threads without locks, non-atomic read-modify-write |
 | Degradation | O(n²) algorithms, excessive allocations, unbounded growth | Nested loops, loading entire DB table into memory, missing pagination |
 | Resource Leak | Resources opened but not properly closed | `open()` without context manager, DB connection not returned to pool |
+| Security | SQL injection, XSS, command injection, SSRF, hardcoded secrets | String-concatenated SQL queries, `os.system()` with user input, hardcoded API keys |
 
 ## Quick Start
 
@@ -45,6 +46,16 @@ uv tool install mastiff
 ```
 
 Get your API key at https://console.anthropic.com/
+
+**With OpenAI:**
+
+```bash
+pip install "mastiff[openai]"
+export OPENAI_API_KEY="sk-..."
+mastiff review --staged
+```
+
+Mastiff auto-detects your API key. Supported OpenAI models: gpt-4.1, gpt-4o, gpt-4o-mini.
 
 ## Output Example
 
@@ -78,6 +89,14 @@ Get your API key at https://console.anthropic.com/
 }
 ```
 
+**Agent (`--format agent`):**
+
+```
+[CRITICAL] src/api/users.py:42 blocking-sync-in-async
+time.sleep() blocks the event loop in async handler
+FIX: Replace time.sleep(n) with await asyncio.sleep(n)
+```
+
 ## Usage
 
 ### CLI
@@ -95,8 +114,14 @@ mastiff review --staged --profile quick
 # JSON output
 mastiff review --staged --format json
 
-# Strict mode: exit 1 on any finding
+# Strict mode: exit 2 on any finding
 mastiff review --staged --strict
+
+# Agent-friendly output (plain text, no ANSI)
+mastiff review --staged --format agent
+
+# Watch mode: continuous monitoring
+mastiff watch --profile quick --format agent
 ```
 
 **Review profiles:**
@@ -106,6 +131,14 @@ mastiff review --staged --strict
 | quick | 5,000 tokens | 3,000 tokens | Pre-commit, editor saves |
 | standard | 20,000 tokens | 15,000 tokens | PR review (default) |
 | deep | 50,000 tokens | 30,000 tokens | Release audits |
+
+**Exit codes:**
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success, no findings |
+| 1 | Runtime error (config, API, etc.) |
+| 2 | Success, findings present (`--strict` or `--format agent`) |
 
 ### Pre-commit Hook
 
@@ -132,7 +165,15 @@ Provides real-time diagnostics on file save (quick profile). Configure your edit
 
 Mastiff is designed to review LLM-generated code. When using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) as your development agent, Mastiff acts as an automated safety net that catches production-risk patterns before they reach your codebase.
 
-**Pre-commit hook (recommended):**
+**Automatic feedback loop (recommended):**
+
+```bash
+mastiff install --claude-code
+```
+
+This installs a PostToolUse hook that automatically reviews every file Claude Code writes or edits. When issues are found, they are fed back to Claude Code via stderr, creating an automatic fix loop.
+
+**Pre-commit hook:**
 
 Install the hook once and every commit Claude Code creates is automatically reviewed:
 
@@ -159,6 +200,14 @@ After Claude Code completes a task in a worktree, review all changes before merg
 ```bash
 mastiff review main..HEAD --profile deep
 ```
+
+### With Codex CLI
+
+```bash
+mastiff install --codex
+```
+
+Installs a git `post-commit` hook. Since Codex CLI applies changes via commits, every commit is automatically reviewed. Existing post-commit hooks are preserved and chained.
 
 ## Baseline
 
@@ -227,10 +276,15 @@ Approximate cost per review (depends on diff size and Claude API pricing):
 
 The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budget.
 
+## Migration from v0.1.0
+
+- **Exit code change**: `--strict` now exits with code 2 (was 1) when findings are present. Update CI scripts that check for `exit 1`.
+- **New category**: The `security` detection category is enabled by default. If you explicitly list categories in `mastiff.yaml`, add `security: true` to enable it.
+
 ## Requirements
 
 - Python >= 3.12
-- [Anthropic API key](https://console.anthropic.com/)
+- [Anthropic or OpenAI API key](https://console.anthropic.com/)
 - Git
 
 **Optional extras:**
@@ -238,6 +292,7 @@ The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budg
 ```bash
 pip install "mastiff[tree-sitter]"  # Enhanced import tracing
 pip install "mastiff[lsp]"          # LSP server support
+pip install "mastiff[openai]"       # OpenAI provider support
 ```
 
 ## Development
@@ -245,7 +300,7 @@ pip install "mastiff[lsp]"          # LSP server support
 ```bash
 git clone <repo> && cd mastiff
 uv sync --all-extras
-pytest                 # 277 tests
+pytest                 # 296 tests
 ruff check .           # lint
 mypy src/              # type check
 ```
@@ -261,7 +316,7 @@ src/mastiff/
 ├── context/         # Language parsers, import tracer, resolver
 ├── core/            # Engine, models, fingerprinting, severity
 ├── diff/            # Diff parsing, filtering, collection
-├── integrations/    # Pre-commit hook, LSP server
+├── integrations/    # Pre-commit, Claude Code, Codex hooks, LSP server
 ├── observability/   # Logging and metrics
 └── security/        # Secret patterns, redactor, sanitizer
 ```
