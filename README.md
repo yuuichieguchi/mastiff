@@ -34,7 +34,7 @@ Traditional linters catch syntax and style issues. Mastiff focuses specifically 
 
 ```bash
 pip install mastiff
-export ANTHROPIC_API_KEY="sk-ant-..."
+mastiff init            # Creates mastiff.yaml with defaults
 mastiff review --staged
 ```
 
@@ -46,35 +46,39 @@ pipx install mastiff
 uv tool install mastiff
 ```
 
-Get your API key at https://console.anthropic.com/
+Mastiff auto-detects which provider to use in this order:
 
-**With CLI providers (no API key needed):**
+| Priority | Provider | Condition |
+|----------|----------|-----------|
+| 1 | `claude-code` | `claude` CLI on PATH |
+| 2 | `codex` | `codex` CLI on PATH |
+| 3 | `anthropic` | `ANTHROPIC_API_KEY` set |
+| 4 | `openai` | `OPENAI_API_KEY` set (requires `mastiff[openai]`) |
 
-If you have `claude` or `codex` CLI installed, Mastiff can use them directly — no API key required:
+> **Note:** If you have `claude` or `codex` CLI installed, it will be used automatically — no API key needed. To override, set `api.provider` in `mastiff.yaml`.
+
+**Setup by provider:**
 
 ```bash
+# Claude / Codex CLI (no API key required)
 pip install mastiff
-# claude CLI or codex CLI must be on PATH
-mastiff review --staged
+
+# Anthropic API
+pip install mastiff
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# OpenAI API
+pip install "mastiff[openai]"
+export OPENAI_API_KEY="sk-..."
 ```
 
-Mastiff auto-detects available providers in this order: `claude` CLI → `codex` CLI → `ANTHROPIC_API_KEY` → `OPENAI_API_KEY`. To force a specific provider:
+To force a specific provider regardless of auto-detection:
 
 ```yaml
 # mastiff.yaml
 api:
   provider: claude-code  # or: codex, anthropic, openai
 ```
-
-**With OpenAI:**
-
-```bash
-pip install "mastiff[openai]"
-export OPENAI_API_KEY="sk-..."
-mastiff review --staged
-```
-
-Supported OpenAI models: gpt-4.1, gpt-4o, gpt-4o-mini.
 
 ## Output Example
 
