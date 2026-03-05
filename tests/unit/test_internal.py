@@ -49,6 +49,13 @@ class TestRunCommand:
         )
         assert "err" in result.stderr
 
+    def test_input_text_passed_to_stdin(self):
+        """run_command should accept input_text and pipe it to the process stdin."""
+        from mastiff._internal.subprocess import run_command
+
+        result = run_command(["cat"], input_text="hello stdin")
+        assert result.stdout.strip() == "hello stdin"
+
 
 class TestGitCommand:
     """git_command function tests."""

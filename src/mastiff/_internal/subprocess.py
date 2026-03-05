@@ -49,6 +49,7 @@ def run_command(
     cwd: Path | None = None,
     timeout: float = 30.0,
     check: bool = True,
+    input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run a subprocess with timeout, capturing stdout/stderr as text.
 
@@ -57,6 +58,8 @@ def run_command(
         cwd: Working directory for the subprocess.
         timeout: Maximum seconds to wait before killing the process.
         check: If True, raise SubprocessError on non-zero exit code.
+        input_text: Text to send to the process via stdin. When provided,
+            stdin is fed from this string instead of being closed.
 
     Returns:
         CompletedProcess with stdout and stderr as strings.
@@ -69,6 +72,7 @@ def run_command(
         result = subprocess.run(
             args,
             cwd=cwd,
+            input=input_text,
             capture_output=True,
             text=True,
             timeout=timeout,

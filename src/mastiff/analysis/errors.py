@@ -16,3 +16,11 @@ class MissingDependencyError(ProviderError):
 
 class InvalidProviderError(ProviderError):
     """Unknown provider name in config."""
+
+
+class CLINotFoundError(ProviderError):
+    """CLI tool not found on PATH or not functional."""
+
+
+class CLIOutputParseError(ProviderError):
+    """Failed to parse CLI output into ReviewResponse."""
