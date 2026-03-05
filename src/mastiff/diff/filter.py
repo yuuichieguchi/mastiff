@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from fnmatch import fnmatch
+from typing import TYPE_CHECKING
 
-from mastiff.core.models import DiffHunk
+if TYPE_CHECKING:
+    from mastiff.core.models import DiffHunk
 
 
 def _matches_pattern(file_path: str, pattern: str) -> bool:
@@ -33,10 +35,7 @@ def _matches_pattern(file_path: str, pattern: str) -> bool:
     # Also match against just the basename
     if fnmatch(parts[-1], pattern):
         return True
-    if stripped != pattern and fnmatch(parts[-1], stripped):
-        return True
-
-    return False
+    return bool(stripped != pattern and fnmatch(parts[-1], stripped))
 
 
 def filter_hunks(

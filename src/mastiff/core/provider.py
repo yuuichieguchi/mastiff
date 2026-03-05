@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from mastiff.core.models import ReviewResponse
+if TYPE_CHECKING:
+    from mastiff.core.models import ReviewResponse
 
 
 @runtime_checkable

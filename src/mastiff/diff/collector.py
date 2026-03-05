@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from mastiff._internal.git import GitError, get_diff, is_git_repo
-from mastiff.core.models import DiffHunk
 from mastiff.diff.parser import parse_diff
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from mastiff.core.models import DiffHunk
 
 
 def collect_diff(

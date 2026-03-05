@@ -1,5 +1,4 @@
 """Tests for mastiff.core.fingerprint — stable Finding ID generation."""
-import pytest
 
 
 class TestFingerprint:
@@ -47,9 +46,9 @@ class TestFindingFingerprint:
     """Test fingerprint generation from Finding objects."""
 
     def test_fingerprint_from_finding(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
-        from mastiff.core.severity import Severity
         from mastiff.core.fingerprint import fingerprint_finding
+        from mastiff.core.models import DetectionCategory, FindingSchema
+        from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="blocking-sync-in-async",
             category=DetectionCategory.BLOCKING,
@@ -65,9 +64,9 @@ class TestFindingFingerprint:
         assert len(fp) > 0
 
     def test_fingerprint_independent_of_line_number(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
-        from mastiff.core.severity import Severity
         from mastiff.core.fingerprint import fingerprint_finding
+        from mastiff.core.models import DetectionCategory, FindingSchema
+        from mastiff.core.severity import Severity
         f1 = FindingSchema(
             rule_id="blocking-sync-in-async",
             category=DetectionCategory.BLOCKING,

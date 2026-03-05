@@ -3,10 +3,6 @@
 import subprocess
 from pathlib import Path
 
-import pytest
-from pydantic import ValidationError
-
-
 # ---------------------------------------------------------------------------
 # diff/parser.py
 # ---------------------------------------------------------------------------

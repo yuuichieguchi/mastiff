@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from mastiff.core.severity import Severity
+from mastiff.core.severity import Severity  # noqa: TCH001 — Pydantic needs this at runtime
 
 
 class DetectionCategory(Enum):

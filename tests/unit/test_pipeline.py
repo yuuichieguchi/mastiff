@@ -1,5 +1,4 @@
 """Tests for mastiff.core.pipeline — ReviewPipeline contract."""
-import pytest
 
 
 class TestReviewPipelineContract:
@@ -10,8 +9,9 @@ class TestReviewPipelineContract:
         assert hasattr(ReviewPipeline, 'run')
 
     def test_pipeline_returns_review_result(self):
-        from mastiff.core.pipeline import ReviewPipeline
         import inspect
+
+        from mastiff.core.pipeline import ReviewPipeline
         sig = inspect.signature(ReviewPipeline.run)
         # Should accept diff_text parameter
         params = list(sig.parameters.keys())
@@ -19,8 +19,9 @@ class TestReviewPipelineContract:
 
     def test_pipeline_accepts_profile(self):
         """Pipeline should accept an analysis profile (quick/standard/deep)."""
-        from mastiff.core.pipeline import ReviewPipeline
         import inspect
+
+        from mastiff.core.pipeline import ReviewPipeline
         sig = inspect.signature(ReviewPipeline.run)
         params = list(sig.parameters.keys())
         assert 'profile' in params

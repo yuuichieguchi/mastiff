@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from collections import deque
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from mastiff.context.languages.generic import GenericImportParser
 from mastiff.context.languages.python import PythonImportParser
 from mastiff.context.languages.typescript import TypeScriptImportParser
 from mastiff.context.resolver import ImportResolver
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class ImportTracer:

@@ -94,10 +94,7 @@ def _parse_file_diff(file_diff: str) -> DiffHunk | None:
 
         # Get lines until next hunk header or end
         start = hunk_match.end()
-        if idx + 1 < len(hunk_positions):
-            end = hunk_positions[idx + 1].start()
-        else:
-            end = len(file_diff)
+        end = hunk_positions[idx + 1].start() if idx + 1 < len(hunk_positions) else len(file_diff)
 
         content = file_diff[start:end]
         for line in content.split("\n"):

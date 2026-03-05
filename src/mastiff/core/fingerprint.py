@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import re
+from typing import TYPE_CHECKING
 
-from mastiff.core.models import FindingSchema
+if TYPE_CHECKING:
+    from mastiff.core.models import FindingSchema
 
 
 def generate_fingerprint(rule_id: str, code_snippet: str) -> str:

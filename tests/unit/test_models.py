@@ -25,7 +25,7 @@ class TestFindingSchema:
     """FindingSchema model tests."""
 
     def test_valid_finding(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.models import DetectionCategory, FindingSchema
         from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="blocking-sync-in-async",
@@ -45,7 +45,7 @@ class TestFindingSchema:
         assert finding.symbol is None
 
     def test_finding_forbids_extra_fields(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.models import DetectionCategory, FindingSchema
         from mastiff.core.severity import Severity
         with pytest.raises(ValidationError):
             FindingSchema(
@@ -61,7 +61,7 @@ class TestFindingSchema:
             )
 
     def test_confidence_bounds(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.models import DetectionCategory, FindingSchema
         from mastiff.core.severity import Severity
         with pytest.raises(ValidationError):
             FindingSchema(
@@ -87,7 +87,7 @@ class TestFindingSchema:
             )
 
     def test_finding_with_all_optional_fields(self):
-        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.models import DetectionCategory, FindingSchema
         from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="race-shared-state",
@@ -125,7 +125,7 @@ class TestReviewResponse:
             ReviewResponse(findings=[], extra="bad")
 
     def test_response_with_findings(self):
-        from mastiff.core.models import FindingSchema, ReviewResponse, DetectionCategory
+        from mastiff.core.models import DetectionCategory, FindingSchema, ReviewResponse
         from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="leak-file-handle",
@@ -185,7 +185,7 @@ class TestReviewResult:
     """ReviewResult model tests."""
 
     def test_review_result(self):
-        from mastiff.core.models import ReviewResult, ReviewResponse
+        from mastiff.core.models import ReviewResponse, ReviewResult
         result = ReviewResult(
             response=ReviewResponse(findings=[]),
             input_tokens=100,

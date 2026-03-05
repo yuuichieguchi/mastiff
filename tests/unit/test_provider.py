@@ -1,5 +1,4 @@
 """Tests for mastiff.core.provider — LLMProvider Protocol."""
-import pytest
 
 
 class TestLLMProviderProtocol:
@@ -17,8 +16,8 @@ class TestLLMProviderProtocol:
         assert result is False  # Dummy doesn't implement the protocol
 
     def test_fake_provider_satisfies_protocol(self):
-        from mastiff.core.provider import LLMProvider
         from mastiff.core.models import ReviewResponse
+        from mastiff.core.provider import LLMProvider
 
         class FakeProvider:
             async def review(self, prompt: str, model: str | None = None) -> ReviewResponse:

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 
-from mastiff.core.models import ReviewResult
+if TYPE_CHECKING:
+    from mastiff.core.models import ReviewResult
 
 
 class ReviewPipeline(abc.ABC):

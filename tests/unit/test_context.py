@@ -4,9 +4,6 @@ import time
 from pathlib import Path
 from typing import runtime_checkable
 
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # context/languages/base.py — ImportParser Protocol
 # ---------------------------------------------------------------------------

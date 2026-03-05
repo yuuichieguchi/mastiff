@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import anthropic
+from anthropic.types import TextBlock
 
-from mastiff.analysis.prompt import PromptBuilder
 from mastiff.analysis.response import parse_response
 from mastiff.core.models import ReviewResponse
 
@@ -37,9 +37,7 @@ class CostGuard:
         """
         if estimated_cost > self._max_cost_usd:
             return False
-        if self._max_tokens is not None and tokens > self._max_tokens:
-            return False
-        return True
+        return not (self._max_tokens is not None and tokens > self._max_tokens)
 
 
 class AnthropicProvider:
@@ -65,33 +63,27 @@ class AnthropicProvider:
         """The configured model identifier."""
         return self._model
 
-    async def review(
-        self,
-        *,
-        diff_text: str,
-        context_text: str,
-        profile: str = "standard",
-        project_context: str | None = None,
-    ) -> ReviewResponse | None:
+    async def review(self, prompt: str, model: str | None = None) -> ReviewResponse:
         """Run a code review via the Anthropic API.
 
         Args:
-            diff_text: The unified diff to review.
-            context_text: Surrounding context code.
-            profile: Review profile (quick/standard/deep).
-            project_context: Optional project description.
+            prompt: The fully-built review prompt.
+            model: Optional model override (uses configured model if None).
 
         Returns:
-            Parsed ReviewResponse, or None if parsing fails.
+            Parsed ReviewResponse (empty findings if parsing fails).
         """
-        builder = PromptBuilder(profile=profile, project_context=project_context)
-        prompt = builder.build(diff_text=diff_text, context_text=context_text)
+        use_model = model or self._model
 
         message = self._client.messages.create(
-            model=self._model,
+            model=use_model,
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
         )
 
-        response_text = message.content[0].text
-        return parse_response(response_text)
+        block = message.content[0]
+        if not isinstance(block, TextBlock):
+            return ReviewResponse(findings=[])
+        response_text = block.text
+        result = parse_response(response_text)
+        return result if result is not None else ReviewResponse(findings=[])

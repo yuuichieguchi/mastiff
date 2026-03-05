@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-
 # ---------------------------------------------------------------------------
 # config/defaults.py
 # ---------------------------------------------------------------------------
@@ -457,7 +456,7 @@ class TestMastiffConfig:
             MastiffConfig(unknown="bad")
 
     def test_partial_override(self):
-        from mastiff.config.schema import MastiffConfig, ApiConfig
+        from mastiff.config.schema import ApiConfig, MastiffConfig
 
         cfg = MastiffConfig(api=ApiConfig(model="claude-sonnet-4-20250514"))
         assert cfg.api.model == "claude-sonnet-4-20250514"
