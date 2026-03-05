@@ -6,7 +6,7 @@
 
 AI code review agent that detects dangerous patterns in LLM-generated code.
 
-Mastiff analyzes git diffs using the Claude or OpenAI API to detect production-risk patterns across five categories — blocking/deadlocks, race conditions, performance degradation, resource leaks, and security vulnerabilities — scoring each finding by severity and confidence.
+Mastiff analyzes git diffs using Claude or OpenAI to detect production-risk patterns across five categories — blocking/deadlocks, race conditions, performance degradation, resource leaks, and security vulnerabilities — scoring each finding by severity and confidence. Works with API keys or directly through the `claude` / `codex` CLI (no API key required).
 
 ## Why Mastiff?
 
@@ -47,6 +47,24 @@ uv tool install mastiff
 
 Get your API key at https://console.anthropic.com/
 
+**With CLI providers (no API key needed):**
+
+If you have `claude` or `codex` CLI installed, Mastiff can use them directly — no API key required:
+
+```bash
+pip install mastiff
+# claude CLI or codex CLI must be on PATH
+mastiff review --staged
+```
+
+Mastiff auto-detects available providers in this order: `claude` CLI → `codex` CLI → `ANTHROPIC_API_KEY` → `OPENAI_API_KEY`. To force a specific provider:
+
+```yaml
+# mastiff.yaml
+api:
+  provider: claude-code  # or: codex, anthropic, openai
+```
+
 **With OpenAI:**
 
 ```bash
@@ -55,7 +73,7 @@ export OPENAI_API_KEY="sk-..."
 mastiff review --staged
 ```
 
-Mastiff auto-detects your API key. Supported OpenAI models: gpt-4.1, gpt-4o, gpt-4o-mini.
+Supported OpenAI models: gpt-4.1, gpt-4o, gpt-4o-mini.
 
 ## Output Example
 
@@ -276,7 +294,14 @@ Approximate cost per review (depends on diff size and Claude API pricing):
 
 The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budget.
 
-## Migration from v0.1.0
+## Migration
+
+### From v0.2.0
+
+- **CLI providers**: Mastiff now auto-detects `claude` and `codex` CLIs and prefers them over API keys. If you want to keep using API keys when a CLI is also installed, set `api.provider: anthropic` (or `openai`) explicitly in `mastiff.yaml`.
+- **New provider names**: `claude-code` and `codex` are now valid values for `api.provider`.
+
+### From v0.1.0
 
 - **Exit code change**: `--strict` now exits with code 2 (was 1) when findings are present. Update CI scripts that check for `exit 1`.
 - **New category**: The `security` detection category is enabled by default. If you explicitly list categories in `mastiff.yaml`, add `security: true` to enable it.
@@ -284,7 +309,7 @@ The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budg
 ## Requirements
 
 - Python >= 3.12
-- [Anthropic or OpenAI API key](https://console.anthropic.com/)
+- One of: `claude` CLI, `codex` CLI, [Anthropic API key](https://console.anthropic.com/), or [OpenAI API key](https://platform.openai.com/)
 - Git
 
 **Optional extras:**
@@ -300,7 +325,7 @@ pip install "mastiff[openai]"       # OpenAI provider support
 ```bash
 git clone <repo> && cd mastiff
 uv sync --all-extras
-pytest                 # 296 tests
+pytest                 # 325 tests
 ruff check .           # lint
 mypy src/              # type check
 ```
