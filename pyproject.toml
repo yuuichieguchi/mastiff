@@ -20,12 +20,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
-
-[project.urls]
-Homepage = "https://github.com/yuuichieguchi/mastiff"
-Repository = "https://github.com/yuuichieguchi/mastiff"
-Issues = "https://github.com/yuuichieguchi/mastiff/issues"
-
 dependencies = [
     "anthropic>=0.42,<1.0",
     "click>=8.1,<9.0",
@@ -50,6 +44,11 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yuuichieguchi/mastiff"
+Repository = "https://github.com/yuuichieguchi/mastiff"
+Issues = "https://github.com/yuuichieguchi/mastiff/issues"
 
 [project.scripts]
 mastiff = "mastiff.cli.app:main"
