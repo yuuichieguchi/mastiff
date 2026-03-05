@@ -8,6 +8,7 @@ DEFAULT_CONFIG: dict[str, object] = {
         "max_tokens": 4096,
         "temperature": 0.2,
         "api_key_env": "ANTHROPIC_API_KEY",
+        "provider": None,
     },
     "context": {
         "max_depth": 2,

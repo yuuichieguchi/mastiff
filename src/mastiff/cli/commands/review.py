@@ -43,19 +43,19 @@ def review(
     config_path: Path | None,
 ) -> None:
     """Review code changes for dangerous patterns."""
-    import os
-
-    from mastiff.analysis.client import AnthropicProvider
+    from mastiff.analysis.errors import ProviderError
+    from mastiff.analysis.provider_factory import create_provider
     from mastiff.cli.output import render_findings, render_json
     from mastiff.config.loader import load_config
     from mastiff.core.engine import ReviewEngine
 
     config = load_config(config_path)
-    api_key = os.environ.get(config.api.api_key_env, "")
-    if not api_key:
-        raise click.ClickException(f"Set {config.api.api_key_env} environment variable")
 
-    provider = AnthropicProvider(api_key=api_key, model=config.api.model)
+    try:
+        provider = create_provider(config)
+    except ProviderError as exc:
+        raise click.ClickException(str(exc)) from None
+
     engine = ReviewEngine(config=config, provider=provider)
 
     result = asyncio.run(

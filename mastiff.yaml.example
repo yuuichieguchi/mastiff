@@ -3,6 +3,7 @@ api:
   max_tokens: 4096
   temperature: 0.2
   api_key_env: "ANTHROPIC_API_KEY"
+  provider: null  # auto-detect from env vars (anthropic | openai | null)
 
 context:
   max_depth: 2

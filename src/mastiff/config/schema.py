@@ -16,6 +16,7 @@ class ApiConfig(BaseModel):
     max_tokens: int = Field(default=4096, ge=1)
     temperature: float = Field(default=0.2, ge=0.0, le=1.0)
     api_key_env: str = "ANTHROPIC_API_KEY"
+    provider: str | None = None
 
 
 class ContextConfig(BaseModel):

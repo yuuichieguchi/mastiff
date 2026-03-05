@@ -40,6 +40,7 @@ class TestDefaultConfig:
         assert api["max_tokens"] == 4096
         assert api["temperature"] == 0.2
         assert api["api_key_env"] == "ANTHROPIC_API_KEY"
+        assert api["provider"] is None
 
     # -- context --
 
@@ -132,6 +133,7 @@ class TestApiConfig:
         assert cfg.max_tokens == 4096
         assert cfg.temperature == 0.2
         assert cfg.api_key_env == "ANTHROPIC_API_KEY"
+        assert cfg.provider is None
 
     def test_extra_fields_rejected(self):
         from mastiff.config.schema import ApiConfig

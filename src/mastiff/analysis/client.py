@@ -87,3 +87,40 @@ class AnthropicProvider:
         response_text = block.text
         result = parse_response(response_text)
         return result if result is not None else ReviewResponse(findings=[])
+
+
+class OpenAIProvider:
+    """OpenAI API provider for code review."""
+
+    def __init__(self, api_key: str, model: str) -> None:
+        try:
+            from openai import OpenAI as _OpenAI
+        except ImportError:
+            from mastiff.analysis.errors import MissingDependencyError
+
+            msg = "Install mastiff[openai]: pip install 'mastiff[openai]'"
+            raise MissingDependencyError(msg) from None
+        self._api_key = api_key
+        self._model = model
+        self._client = _OpenAI(api_key=api_key)
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    async def review(self, prompt: str, model: str | None = None) -> ReviewResponse:
+        use_model = model or self._model
+        response = self._client.chat.completions.create(
+            model=use_model,
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+        )
+        content = response.choices[0].message.content
+        if not content:
+            return ReviewResponse(findings=[])
+        result = parse_response(content)
+        return result if result is not None else ReviewResponse(findings=[])
