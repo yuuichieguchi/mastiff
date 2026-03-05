@@ -48,6 +48,8 @@ class AnthropicProvider:
         model: Model identifier to use.
     """
 
+    supports_runtime_model_override: bool = True
+
     def __init__(self, api_key: str, model: str) -> None:
         self._api_key = api_key
         self._model = model
@@ -91,6 +93,8 @@ class AnthropicProvider:
 
 class OpenAIProvider:
     """OpenAI API provider for code review."""
+
+    supports_runtime_model_override: bool = True
 
     def __init__(self, api_key: str, model: str) -> None:
         try:

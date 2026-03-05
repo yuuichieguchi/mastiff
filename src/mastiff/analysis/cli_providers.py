@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shlex
 import shutil
 from typing import TYPE_CHECKING
 
@@ -144,6 +145,8 @@ def _extract_codex_text(stdout: str) -> str:
 class ClaudeCodeProvider:
     """LLM provider that uses the ``claude`` CLI for code review."""
 
+    supports_runtime_model_override: bool = False
+
     def __init__(self, model: str, timeout: int) -> None:
         self._model = model
         self._timeout = timeout
@@ -170,14 +173,18 @@ class ClaudeCodeProvider:
             "json",
             "--model",
             use_model,
-            "--no-tool-use",
+            "--tools",
+            "",
         ]
         try:
             result = run_command(cmd, timeout=self._timeout, input_text=prompt, check=True)
         except SubprocessTimeoutError:
             raise ProviderError(f"CLI timed out after {self._timeout}s") from None
         except SubprocessError as exc:
-            raise ProviderError(f"claude CLI failed: {exc.stderr.strip()}") from None
+            cmd_str = shlex.join(cmd)
+            raise ProviderError(
+                f"claude CLI failed (cmd: {cmd_str}): {exc.stderr.strip()}"
+            ) from None
 
         text = _extract_claude_text(result.stdout)
         response = parse_response(text)
@@ -190,6 +197,8 @@ class ClaudeCodeProvider:
 
 class CodexProvider:
     """LLM provider that uses the ``codex`` CLI for code review."""
+
+    supports_runtime_model_override: bool = False
 
     def __init__(self, model: str, timeout: int) -> None:
         self._model = model
@@ -216,7 +225,10 @@ class CodexProvider:
         except SubprocessTimeoutError:
             raise ProviderError(f"CLI timed out after {self._timeout}s") from None
         except SubprocessError as exc:
-            raise ProviderError(f"codex CLI failed: {exc.stderr.strip()}") from None
+            cmd_str = shlex.join(cmd)
+            raise ProviderError(
+                f"codex CLI failed (cmd: {cmd_str}): {exc.stderr.strip()}"
+            ) from None
 
         text = _extract_codex_text(result.stdout)
         response = parse_response(text)

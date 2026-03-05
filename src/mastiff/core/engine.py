@@ -95,7 +95,11 @@ class ReviewEngine:
 
         # 6. Call LLM
         api_start = time.monotonic()
-        response = await self.provider.review(prompt, model=self.config.api.model)
+        supports_override = getattr(
+            self.provider, "supports_runtime_model_override", True
+        )
+        model_override = self.config.api.model if supports_override else None
+        response = await self.provider.review(prompt, model=model_override)
         api_ms = (time.monotonic() - api_start) * 1000
 
         # 7. Filter findings by severity

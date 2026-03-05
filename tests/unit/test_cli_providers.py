@@ -305,7 +305,8 @@ class TestClaudeCodeProvider:
             "json",
             "--model",
             "my-model",
-            "--no-tool-use",
+            "--tools",
+            "",
         ]
         actual_cmd = call_args[0][0]
         assert (
@@ -364,6 +365,29 @@ class TestClaudeCodeProvider:
                 ),
             ),
             pytest.raises(ProviderError),
+        ):
+            await provider.review("prompt")
+
+    @pytest.mark.asyncio
+    async def test_review_error_message_includes_command(self) -> None:
+        """ProviderError from subprocess failure should include the failed command."""
+        from mastiff._internal.subprocess import SubprocessError
+        from mastiff.analysis.cli_providers import ClaudeCodeProvider
+        from mastiff.analysis.errors import ProviderError
+
+        provider = ClaudeCodeProvider(model="m", timeout=60)
+
+        with (
+            patch(
+                "mastiff.analysis.cli_providers.run_command",
+                side_effect=SubprocessError(
+                    args=["claude"],
+                    returncode=1,
+                    stdout="",
+                    stderr="unknown option",
+                ),
+            ),
+            pytest.raises(ProviderError, match="cmd:"),
         ):
             await provider.review("prompt")
 
@@ -552,3 +576,24 @@ class TestCodexProvider:
             pytest.raises(CLIOutputParseError),
         ):
             await provider.review("prompt")
+
+
+# ===========================================================================
+# supports_runtime_model_override attribute
+# ===========================================================================
+
+
+class TestSupportsRuntimeModelOverride:
+    """CLI providers should have supports_runtime_model_override = False."""
+
+    def test_claude_code_provider_has_attribute(self) -> None:
+        from mastiff.analysis.cli_providers import ClaudeCodeProvider
+
+        provider = ClaudeCodeProvider(model="m", timeout=60)
+        assert provider.supports_runtime_model_override is False
+
+    def test_codex_provider_has_attribute(self) -> None:
+        from mastiff.analysis.cli_providers import CodexProvider
+
+        provider = CodexProvider(model="m", timeout=60)
+        assert provider.supports_runtime_model_override is False

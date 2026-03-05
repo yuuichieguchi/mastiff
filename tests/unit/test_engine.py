@@ -207,6 +207,42 @@ class TestReviewEngineProviderCalls:
         assert result.latency_ms >= 0.0
 
 
+class TestReviewEngineModelOverride:
+    """Tests for model override behavior with different provider types."""
+
+    async def test_api_provider_receives_model_override(self):
+        """API providers should receive model=config.api.model."""
+        from mastiff.core.engine import ReviewEngine
+
+        provider = FakeLLMProvider()
+        provider.supports_runtime_model_override = True
+        config = MastiffConfig()
+        engine = ReviewEngine(config=config, provider=provider)
+
+        hunks = [_make_hunk()]
+        with patch("mastiff.core.engine.collect_diff", return_value=hunks):
+            await engine.review(staged=True)
+
+        _, model = provider.calls[0]
+        assert model == config.api.model
+
+    async def test_cli_provider_does_not_receive_model_override(self):
+        """CLI providers (supports_runtime_model_override=False) should receive model=None."""
+        from mastiff.core.engine import ReviewEngine
+
+        provider = FakeLLMProvider()
+        provider.supports_runtime_model_override = False
+        config = MastiffConfig()
+        engine = ReviewEngine(config=config, provider=provider)
+
+        hunks = [_make_hunk()]
+        with patch("mastiff.core.engine.collect_diff", return_value=hunks):
+            await engine.review(staged=True)
+
+        _, model = provider.calls[0]
+        assert model is None
+
+
 class TestReviewEngineFilteredHunks:
     """Tests for hunk filtering (exclude patterns, never_send_paths)."""
 

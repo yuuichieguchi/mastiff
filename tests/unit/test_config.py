@@ -504,10 +504,11 @@ class TestFindConfigFile:
 class TestLoadConfig:
     """load_config merges YAML with defaults via MastiffConfig."""
 
-    def test_no_file_returns_defaults(self):
+    def test_no_file_returns_defaults(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         from mastiff.config.loader import load_config
         from mastiff.config.schema import MastiffConfig
 
+        monkeypatch.chdir(tmp_path)
         cfg = load_config(path=None)
         default = MastiffConfig()
         assert cfg.api.model == default.api.model
@@ -549,6 +550,19 @@ class TestLoadConfig:
         cfg = load_config(path=config_file)
         default = MastiffConfig()
         assert cfg.api.model == default.api.model
+
+    def test_auto_detects_config_file_when_path_is_none(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """load_config(None) should auto-detect mastiff.yaml via find_config_file."""
+        config_file = tmp_path / "mastiff.yaml"
+        config_file.write_text("api:\n  provider: codex\n")
+        monkeypatch.chdir(tmp_path)
+
+        from mastiff.config.loader import load_config
+
+        cfg = load_config(path=None)
+        assert cfg.api.provider == "codex"
 
     def test_extra_top_level_key_raises_validation_error(self, tmp_path: Path):
         from mastiff.config.loader import load_config
