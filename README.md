@@ -16,6 +16,7 @@ LLM-generated code often looks correct at first glance but can contain subtle pa
 - **Race conditions** — shared mutable state accessed without proper synchronization
 - **O(n²) algorithms** — nested loops and unbounded queries that degrade with scale
 - **Resource leaks** — file handles, connections, and sockets opened but never closed
+- **Security vulnerabilities** — SQL injection, command injection, XSS, hardcoded secrets
 
 Traditional linters catch syntax and style issues. Mastiff focuses specifically on the patterns LLMs tend to introduce — not to replace linters, but to complement them with production-risk awareness.
 
@@ -253,7 +254,8 @@ This creates `mastiff.yaml` with documented defaults. Key settings:
 
 ```yaml
 api:
-  model: claude-opus-4-20250514      # Claude model to use
+  provider: null                      # Auto-detect (claude-code, codex, anthropic, openai)
+  model: claude-opus-4-20250514      # Model to use
 
 detection:
   min_confidence: 0.6           # Minimum confidence to report
@@ -272,7 +274,7 @@ All config models use Pydantic `extra="forbid"`, so typos in config keys are cau
 
 ## Security & Privacy
 
-Mastiff sends code to the Claude API for analysis. Here is what it does to minimize exposure:
+Mastiff sends code to an LLM for analysis (via API or CLI). Here is what it does to minimize exposure:
 
 - **What is sent**: Only the diff is sent — never complete source files. Import tracing may include small fragments from related files, bounded by a token budget.
 - **Automatic redaction**: Built-in regex patterns detect API keys, tokens, passwords, and private key headers. Detected values are replaced with `[REDACTED]` before sending. The Redactor also exposes Shannon entropy analysis for identifying high-entropy strings.
@@ -284,7 +286,7 @@ This is a best-effort approach to minimize sensitive data exposure. It does not 
 
 ## Cost Control
 
-Approximate cost per review (depends on diff size and Claude API pricing):
+Approximate cost per review when using API providers (depends on diff size and API pricing):
 
 | Profile | Estimated cost |
 |---|---|
@@ -292,7 +294,9 @@ Approximate cost per review (depends on diff size and Claude API pricing):
 | standard | ~$0.05–0.30 |
 | deep | ~$0.10–0.50 |
 
-The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budget.
+CLI providers (`claude-code`, `codex`) use your existing subscription — no per-request API charges.
+
+The `cost.max_cost_usd_per_run` setting (default: $1.00) enforces a per-run budget for API providers.
 
 ## Migration
 
