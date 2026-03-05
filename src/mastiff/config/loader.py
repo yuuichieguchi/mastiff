@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import yaml
 
 from mastiff.config.schema import MastiffConfig
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 _CONFIG_FILENAME = "mastiff.yaml"
 
@@ -34,13 +31,17 @@ def find_config_file(start: Path) -> Path | None:
 def load_config(path: Path | None = None) -> MastiffConfig:
     """Load and validate a :class:`MastiffConfig` from a YAML file.
 
-    * If *path* is ``None``, returns the default configuration.
+    * If *path* is ``None``, searches upward from the current working
+      directory for ``mastiff.yaml``.  If no file is found, returns the
+      default configuration.
     * If the YAML file is empty, returns the default configuration.
     * Partial YAML is deep-merged with defaults via Pydantic model
       validation (missing keys get their defaults).
     * Extra top-level keys or invalid values raise
       :class:`pydantic.ValidationError`.
     """
+    if path is None:
+        path = find_config_file(Path.cwd())
     if path is None:
         return MastiffConfig()
 
