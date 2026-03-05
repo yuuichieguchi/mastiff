@@ -17,6 +17,7 @@ class DetectionCategory(Enum):
     RACE_CONDITION = "race_condition"
     DEGRADATION = "degradation"
     RESOURCE_LEAK = "resource_leak"
+    SECURITY = "security"
 
 
 class FindingSchema(BaseModel):

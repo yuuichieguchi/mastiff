@@ -44,6 +44,7 @@ class DetectionConfig(BaseModel):
             "race_condition": True,
             "degradation": True,
             "resource_leak": True,
+            "security": True,
         },
     )
     min_confidence: float = Field(default=0.6, ge=0.0, le=1.0)

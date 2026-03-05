@@ -13,7 +13,7 @@ class TestCategoryDefinitions:
     def test_has_all_categories(self):
         from mastiff.analysis.categories import CATEGORY_DEFINITIONS
 
-        expected = {"blocking", "race_condition", "degradation", "resource_leak"}
+        expected = {"blocking", "race_condition", "degradation", "resource_leak", "security"}
         assert set(CATEGORY_DEFINITIONS.keys()) == expected
 
     def test_each_has_name_description_examples(self):

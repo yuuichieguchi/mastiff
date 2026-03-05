@@ -23,6 +23,7 @@ DEFAULT_CONFIG: dict[str, object] = {
             "race_condition": True,
             "degradation": True,
             "resource_leak": True,
+            "security": True,
         },
         "min_confidence": 0.6,
         "severity_threshold": "info",

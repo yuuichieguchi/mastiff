@@ -18,6 +18,7 @@ detection:
     race_condition: true
     degradation: true
     resource_leak: true
+    security: true
   min_confidence: 0.6
   severity_threshold: "info"
   score_threshold: 0.5

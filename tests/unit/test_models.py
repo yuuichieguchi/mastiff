@@ -12,6 +12,7 @@ class TestDetectionCategory:
         assert hasattr(DetectionCategory, "RACE_CONDITION")
         assert hasattr(DetectionCategory, "DEGRADATION")
         assert hasattr(DetectionCategory, "RESOURCE_LEAK")
+        assert hasattr(DetectionCategory, "SECURITY")
 
     def test_category_values(self):
         from mastiff.core.models import DetectionCategory
@@ -19,6 +20,7 @@ class TestDetectionCategory:
         assert DetectionCategory.RACE_CONDITION.value == "race_condition"
         assert DetectionCategory.DEGRADATION.value == "degradation"
         assert DetectionCategory.RESOURCE_LEAK.value == "resource_leak"
+        assert DetectionCategory.SECURITY.value == "security"
 
 
 class TestFindingSchema:

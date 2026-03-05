@@ -16,8 +16,8 @@ _PROFILE_LIMITS: dict[str, tuple[int, int]] = {
 _SYSTEM_PROMPT = """\
 You are a senior code reviewer specializing in detecting dangerous patterns \
 in code changes. Your PRIORITY is to identify issues that could cause production \
-incidents: blocking/deadlocks, race conditions, performance degradation, and \
-resource leaks.
+incidents: blocking/deadlocks, race conditions, performance degradation, \
+resource leaks, and security vulnerabilities.
 
 Analyze the diff below and report findings in the specified JSON format. \
 Only report issues you are confident about. Do not report style issues or \
@@ -30,7 +30,7 @@ Respond with a JSON object matching this schema:
   "findings": [
     {
       "rule_id": "<category>-<short-name>",
-      "category": "blocking|race_condition|degradation|resource_leak",
+      "category": "blocking|race_condition|degradation|resource_leak|security",
       "severity": "critical|warning|info",
       "file_path": "<path>",
       "line_start": <int>,

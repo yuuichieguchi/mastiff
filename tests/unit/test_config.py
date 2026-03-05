@@ -58,7 +58,7 @@ class TestDefaultConfig:
         from mastiff.config.defaults import DEFAULT_CONFIG
 
         det = DEFAULT_CONFIG["detection"]
-        for cat in ("blocking", "race_condition", "degradation", "resource_leak"):
+        for cat in ("blocking", "race_condition", "degradation", "resource_leak", "security"):
             assert det["categories"][cat] is True
         assert det["min_confidence"] == 0.6
         assert det["severity_threshold"] == "info"
@@ -197,6 +197,7 @@ class TestDetectionConfig:
             "race_condition": True,
             "degradation": True,
             "resource_leak": True,
+            "security": True,
         }
         assert cfg.min_confidence == 0.6
         assert cfg.severity_threshold == "info"

@@ -55,4 +55,18 @@ CATEGORY_DEFINITIONS: dict[str, dict[str, str | list[str]]] = {
             "Event listeners registered but never removed",
         ],
     },
+    "security": {
+        "name": "Security",
+        "description": (
+            "Security vulnerabilities including SQL injection, XSS, command injection, "
+            "path traversal, insecure deserialization, SSRF, hardcoded secrets, "
+            "and insecure cryptographic practices."
+        ),
+        "examples": [
+            "SQL injection via string concatenation",
+            "os.system() with user input",
+            "pickle.loads on untrusted data",
+            "Hardcoded API keys in source",
+        ],
+    },
 }
