@@ -1,10 +1,10 @@
-"""LLMProvider protocol for sentinel."""
+"""LLMProvider protocol for mastiff."""
 
 from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from sentinel.core.models import ReviewResponse
+from mastiff.core.models import ReviewResponse
 
 
 @runtime_checkable

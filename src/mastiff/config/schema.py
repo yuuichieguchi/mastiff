@@ -1,4 +1,4 @@
-"""Pydantic v2 configuration models for sentinel."""
+"""Pydantic v2 configuration models for mastiff."""
 
 from __future__ import annotations
 
@@ -140,8 +140,8 @@ class PrecommitConfig(BaseModel):
     use_baseline: bool = True
 
 
-class SentinelConfig(BaseModel):
-    """Top-level sentinel configuration, aggregating all sub-configs."""
+class MastiffConfig(BaseModel):
+    """Top-level mastiff configuration, aggregating all sub-configs."""
 
     model_config = ConfigDict(extra="forbid")
 

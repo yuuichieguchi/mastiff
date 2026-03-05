@@ -1,1 +1,1 @@
-"""Unit tests for sentinel core modules."""
+"""Unit tests for mastiff core modules."""

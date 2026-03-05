@@ -1,10 +1,10 @@
-"""ReviewPipeline abstract contract for sentinel."""
+"""ReviewPipeline abstract contract for mastiff."""
 
 from __future__ import annotations
 
 import abc
 
-from sentinel.core.models import ReviewResult
+from mastiff.core.models import ReviewResult
 
 
 class ReviewPipeline(abc.ABC):

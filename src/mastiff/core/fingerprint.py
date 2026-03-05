@@ -1,11 +1,11 @@
-"""Stable fingerprint generation for sentinel findings."""
+"""Stable fingerprint generation for mastiff findings."""
 
 from __future__ import annotations
 
 import hashlib
 import re
 
-from sentinel.core.models import FindingSchema
+from mastiff.core.models import FindingSchema
 
 
 def generate_fingerprint(rule_id: str, code_snippet: str) -> str:

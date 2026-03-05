@@ -10,5 +10,5 @@ build/
 .ruff_cache/
 *.egg
 .env
-.sentinel-baseline.json
-~/.sentinel/
+.mastiff-baseline.json
+~/.mastiff/

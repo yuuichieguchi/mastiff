@@ -8,7 +8,7 @@ from fnmatch import fnmatch
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
-from sentinel.security.patterns import SECRET_PATTERNS
+from mastiff.security.patterns import SECRET_PATTERNS
 
 if TYPE_CHECKING:
     import re

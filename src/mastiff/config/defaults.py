@@ -1,4 +1,4 @@
-"""Default configuration values for sentinel."""
+"""Default configuration values for mastiff."""
 
 from __future__ import annotations
 

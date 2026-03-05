@@ -1,4 +1,4 @@
-"""Tests for sentinel.core.models — Pydantic data models."""
+"""Tests for mastiff.core.models — Pydantic data models."""
 import pytest
 from pydantic import ValidationError
 
@@ -7,14 +7,14 @@ class TestDetectionCategory:
     """DetectionCategory enum tests."""
 
     def test_has_all_categories(self):
-        from sentinel.core.models import DetectionCategory
+        from mastiff.core.models import DetectionCategory
         assert hasattr(DetectionCategory, "BLOCKING")
         assert hasattr(DetectionCategory, "RACE_CONDITION")
         assert hasattr(DetectionCategory, "DEGRADATION")
         assert hasattr(DetectionCategory, "RESOURCE_LEAK")
 
     def test_category_values(self):
-        from sentinel.core.models import DetectionCategory
+        from mastiff.core.models import DetectionCategory
         assert DetectionCategory.BLOCKING.value == "blocking"
         assert DetectionCategory.RACE_CONDITION.value == "race_condition"
         assert DetectionCategory.DEGRADATION.value == "degradation"
@@ -25,8 +25,8 @@ class TestFindingSchema:
     """FindingSchema model tests."""
 
     def test_valid_finding(self):
-        from sentinel.core.models import FindingSchema, DetectionCategory
-        from sentinel.core.severity import Severity
+        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="blocking-sync-in-async",
             category=DetectionCategory.BLOCKING,
@@ -45,8 +45,8 @@ class TestFindingSchema:
         assert finding.symbol is None
 
     def test_finding_forbids_extra_fields(self):
-        from sentinel.core.models import FindingSchema, DetectionCategory
-        from sentinel.core.severity import Severity
+        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.severity import Severity
         with pytest.raises(ValidationError):
             FindingSchema(
                 rule_id="test",
@@ -61,8 +61,8 @@ class TestFindingSchema:
             )
 
     def test_confidence_bounds(self):
-        from sentinel.core.models import FindingSchema, DetectionCategory
-        from sentinel.core.severity import Severity
+        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.severity import Severity
         with pytest.raises(ValidationError):
             FindingSchema(
                 rule_id="test",
@@ -87,8 +87,8 @@ class TestFindingSchema:
             )
 
     def test_finding_with_all_optional_fields(self):
-        from sentinel.core.models import FindingSchema, DetectionCategory
-        from sentinel.core.severity import Severity
+        from mastiff.core.models import FindingSchema, DetectionCategory
+        from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="race-shared-state",
             category=DetectionCategory.RACE_CONDITION,
@@ -114,19 +114,19 @@ class TestReviewResponse:
     """ReviewResponse model tests."""
 
     def test_empty_findings(self):
-        from sentinel.core.models import ReviewResponse
+        from mastiff.core.models import ReviewResponse
         resp = ReviewResponse(findings=[])
         assert resp.findings == []
         assert resp.schema_version == "1"
 
     def test_response_forbids_extra_fields(self):
-        from sentinel.core.models import ReviewResponse
+        from mastiff.core.models import ReviewResponse
         with pytest.raises(ValidationError):
             ReviewResponse(findings=[], extra="bad")
 
     def test_response_with_findings(self):
-        from sentinel.core.models import FindingSchema, ReviewResponse, DetectionCategory
-        from sentinel.core.severity import Severity
+        from mastiff.core.models import FindingSchema, ReviewResponse, DetectionCategory
+        from mastiff.core.severity import Severity
         finding = FindingSchema(
             rule_id="leak-file-handle",
             category=DetectionCategory.RESOURCE_LEAK,
@@ -146,7 +146,7 @@ class TestDiffHunk:
     """DiffHunk model tests."""
 
     def test_diff_hunk_creation(self):
-        from sentinel.core.models import DiffHunk
+        from mastiff.core.models import DiffHunk
         hunk = DiffHunk(
             file_path="src/main.py",
             old_path=None,
@@ -164,7 +164,7 @@ class TestDiffHunk:
         assert hunk.is_rename is False
 
     def test_diff_hunk_rename(self):
-        from sentinel.core.models import DiffHunk
+        from mastiff.core.models import DiffHunk
         hunk = DiffHunk(
             file_path="src/new.py",
             old_path="src/old.py",
@@ -185,7 +185,7 @@ class TestReviewResult:
     """ReviewResult model tests."""
 
     def test_review_result(self):
-        from sentinel.core.models import ReviewResult, ReviewResponse
+        from mastiff.core.models import ReviewResult, ReviewResponse
         result = ReviewResult(
             response=ReviewResponse(findings=[]),
             input_tokens=100,

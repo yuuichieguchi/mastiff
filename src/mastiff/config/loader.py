@@ -1,4 +1,4 @@
-"""Configuration file discovery and loading for sentinel."""
+"""Configuration file discovery and loading for mastiff."""
 
 from __future__ import annotations
 
@@ -6,13 +6,13 @@ from pathlib import Path
 
 import yaml
 
-from sentinel.config.schema import SentinelConfig
+from mastiff.config.schema import MastiffConfig
 
-_CONFIG_FILENAME = "sentinel.yaml"
+_CONFIG_FILENAME = "mastiff.yaml"
 
 
 def find_config_file(start: Path) -> Path | None:
-    """Search upward from *start* for a sentinel.yaml file.
+    """Search upward from *start* for a mastiff.yaml file.
 
     Returns the resolved path if found, or ``None``.
     """
@@ -28,8 +28,8 @@ def find_config_file(start: Path) -> Path | None:
         current = parent
 
 
-def load_config(path: Path | None = None) -> SentinelConfig:
-    """Load and validate a :class:`SentinelConfig` from a YAML file.
+def load_config(path: Path | None = None) -> MastiffConfig:
+    """Load and validate a :class:`MastiffConfig` from a YAML file.
 
     * If *path* is ``None``, returns the default configuration.
     * If the YAML file is empty, returns the default configuration.
@@ -39,17 +39,17 @@ def load_config(path: Path | None = None) -> SentinelConfig:
       :class:`pydantic.ValidationError`.
     """
     if path is None:
-        return SentinelConfig()
+        return MastiffConfig()
 
     raw_text = path.read_text(encoding="utf-8")
     data = yaml.safe_load(raw_text)
 
     if data is None:
         # Empty YAML document
-        return SentinelConfig()
+        return MastiffConfig()
 
     if not isinstance(data, dict):
         msg = f"Expected a YAML mapping at top level, got {type(data).__name__}"
         raise TypeError(msg)
 
-    return SentinelConfig.model_validate(data)
+    return MastiffConfig.model_validate(data)

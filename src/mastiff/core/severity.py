@@ -1,4 +1,4 @@
-"""Severity enum and judgment matrix for sentinel findings."""
+"""Severity enum and judgment matrix for mastiff findings."""
 
 from __future__ import annotations
 

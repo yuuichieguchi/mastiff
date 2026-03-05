@@ -1,4 +1,4 @@
-"""Pydantic data models for sentinel core domain."""
+"""Pydantic data models for mastiff core domain."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from sentinel.core.severity import Severity
+from mastiff.core.severity import Severity
 
 
 class DetectionCategory(Enum):
-    """Categories of dangerous code patterns detected by sentinel."""
+    """Categories of dangerous code patterns detected by mastiff."""
 
     BLOCKING = "blocking"
     RACE_CONDITION = "race_condition"

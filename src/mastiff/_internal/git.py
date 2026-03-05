@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sentinel._internal.subprocess import SubprocessError, run_command
+from mastiff._internal.subprocess import SubprocessError, run_command
 
 
 class GitError(Exception):

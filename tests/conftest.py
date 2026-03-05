@@ -1,1 +1,1 @@
-"""Sentinel test configuration."""
+"""Mastiff test configuration."""
