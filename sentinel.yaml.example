@@ -1,0 +1,62 @@
+api:
+  model: "claude-opus-4-20250514"
+  max_tokens: 4096
+  temperature: 0.2
+  api_key_env: "ANTHROPIC_API_KEY"
+
+context:
+  max_depth: 2
+  max_context_files: 20
+  max_file_lines: 500
+  max_diff_lines: 3000
+  exclude_patterns: ["**/*.test.*", "**/node_modules/**", "**/__pycache__/**"]
+  path_aliases: {}
+
+detection:
+  categories:
+    blocking: true
+    race_condition: true
+    degradation: true
+    resource_leak: true
+  min_confidence: 0.6
+  severity_threshold: "info"
+  score_threshold: 0.5
+
+security:
+  never_send_paths: [".env", "*.pem", "*.key", "*.p12", "*.jks", "*.pfx",
+                     "*credentials*", "**/secrets/**", "**/.kube/config"]
+  redaction_rules: []
+  entropy_detection: true
+
+cost:
+  max_cost_usd_per_run: 1.00
+  max_tokens_per_run: null
+  max_api_seconds: 120
+
+suppressions: []
+
+project:
+  description: ""
+  architecture: ""
+  known_patterns: []
+  custom_rules: []
+
+output:
+  format: "terminal"
+  color: true
+  show_confidence: true
+  group_by: "file"
+
+editor:
+  debounce_ms: 500
+  review_on_save: true
+  profile: "quick"
+  cache_max_entries: 200
+
+precommit:
+  block_on_critical: true
+  block_on_warning: false
+  strict: false
+  max_review_time_seconds: 60
+  max_stale_minutes: 30
+  use_baseline: true
