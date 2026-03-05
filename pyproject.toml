@@ -6,7 +6,20 @@ build-backend = "hatchling.build"
 name = "mastiff"
 version = "0.1.0"
 description = "AI code review agent that detects dangerous patterns in LLM-generated code"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Mastiff Contributors"}]
 requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Quality Assurance",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
 dependencies = [
     "anthropic>=0.42,<1.0",
     "click>=8.1,<9.0",
