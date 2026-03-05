@@ -112,7 +112,7 @@ class OutputConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    format: Literal["terminal", "json", "sarif"] = "terminal"
+    format: Literal["terminal", "json", "sarif", "agent"] = "terminal"
     color: bool = True
     show_confidence: bool = True
     group_by: Literal["file", "category", "severity"] = "file"

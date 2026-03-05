@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from click.testing import CliRunner
 
@@ -77,6 +78,67 @@ class TestReviewCommand:
         assert "standard" in result.output
         assert "deep" in result.output
 
+    def test_review_format_agent_in_help(self):
+        """review --help output contains 'agent' as a format choice."""
+        from mastiff.cli.app import main
+
+        runner = CliRunner()
+        result = runner.invoke(main, ["review", "--help"])
+        assert "agent" in result.output
+
+    def test_review_format_agent_exit_2_on_findings(self, tmp_path, monkeypatch):
+        """review --format agent exits with code 2 when findings are present."""
+        from mastiff.cli.app import main
+        from mastiff.core.models import ReviewResponse, ReviewResult
+
+        monkeypatch.chdir(tmp_path)
+        finding = _make_finding()
+        mock_result = ReviewResult(
+            response=ReviewResponse(findings=[finding]),
+            input_tokens=100,
+            output_tokens=50,
+            latency_ms=500.0,
+            model="test-model",
+            estimated_cost_usd=0.01,
+        )
+
+        with patch("mastiff.cli.commands.review.create_provider"), \
+             patch("mastiff.cli.commands.review.load_config"), \
+             patch("mastiff.cli.commands.review.ReviewEngine") as mock_engine_cls:
+            mock_engine = MagicMock()
+            mock_engine.review = AsyncMock(return_value=mock_result)
+            mock_engine_cls.return_value = mock_engine
+
+            runner = CliRunner()
+            result = runner.invoke(main, ["review", "--format", "agent"])
+            assert result.exit_code == 2
+
+    def test_review_format_agent_exit_0_no_findings(self, tmp_path, monkeypatch):
+        """review --format agent exits with code 0 when no findings."""
+        from mastiff.cli.app import main
+        from mastiff.core.models import ReviewResponse, ReviewResult
+
+        monkeypatch.chdir(tmp_path)
+        mock_result = ReviewResult(
+            response=ReviewResponse(findings=[]),
+            input_tokens=100,
+            output_tokens=50,
+            latency_ms=500.0,
+            model="test-model",
+            estimated_cost_usd=0.01,
+        )
+
+        with patch("mastiff.cli.commands.review.create_provider"), \
+             patch("mastiff.cli.commands.review.load_config"), \
+             patch("mastiff.cli.commands.review.ReviewEngine") as mock_engine_cls:
+            mock_engine = MagicMock()
+            mock_engine.review = AsyncMock(return_value=mock_result)
+            mock_engine_cls.return_value = mock_engine
+
+            runner = CliRunner()
+            result = runner.invoke(main, ["review", "--format", "agent"])
+            assert result.exit_code == 0
+
 
 class TestInitCommand:
     """Tests for the init subcommand."""
@@ -148,6 +210,45 @@ class TestInstallCommand:
         runner.invoke(main, ["install"])
         hook_path = hooks_dir / "pre-commit"
         assert os.access(hook_path, os.X_OK)
+
+    def test_install_claude_code_creates_hooks(self, tmp_path, monkeypatch):
+        """install --claude-code creates .claude/hooks/mastiff-review.sh."""
+        from mastiff.cli.app import main
+
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / ".claude").mkdir(parents=True, exist_ok=True)
+        runner = CliRunner()
+        result = runner.invoke(main, ["install", "--claude-code"])
+        assert result.exit_code == 0
+        hook_path = tmp_path / ".claude" / "hooks" / "mastiff-review.sh"
+        assert hook_path.exists()
+
+    def test_install_codex_creates_hooks(self, tmp_path, monkeypatch):
+        """install --codex creates .git/hooks/post-commit."""
+        from mastiff.cli.app import main
+
+        monkeypatch.chdir(tmp_path)
+        hooks_dir = tmp_path / ".git" / "hooks"
+        hooks_dir.mkdir(parents=True)
+        runner = CliRunner()
+        result = runner.invoke(main, ["install", "--codex"])
+        assert result.exit_code == 0
+        hook_path = hooks_dir / "post-commit"
+        assert hook_path.exists()
+
+    def test_install_no_flags_still_works(self, tmp_path, monkeypatch):
+        """install (no flags) still creates pre-commit hook as before."""
+        from mastiff.cli.app import main
+
+        monkeypatch.chdir(tmp_path)
+        hooks_dir = tmp_path / ".git" / "hooks"
+        hooks_dir.mkdir(parents=True)
+        runner = CliRunner()
+        result = runner.invoke(main, ["install"])
+        assert result.exit_code == 0
+        hook_path = hooks_dir / "pre-commit"
+        assert hook_path.exists()
+        assert "mastiff" in hook_path.read_text()
 
 
 class TestBaselineCommand:
@@ -239,3 +340,16 @@ class TestRenderJson:
         result = render_json(response)
         parsed = json.loads(result)
         assert parsed["schema_version"] == "1"
+
+
+class TestWatchCommand:
+    """Tests for the watch subcommand."""
+
+    def test_watch_help(self):
+        """watch --help exits 0 and mentions --interval."""
+        from mastiff.cli.app import main
+
+        runner = CliRunner()
+        result = runner.invoke(main, ["watch", "--help"])
+        assert result.exit_code == 0
+        assert "--interval" in result.output

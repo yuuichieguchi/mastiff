@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from rich.console import Console
 from rich.table import Table
 
+from mastiff.core.models import ReviewResponse  # noqa: TC001 (runtime use)
 from mastiff.security.sanitizer import sanitize_output
-
-if TYPE_CHECKING:
-    from mastiff.core.models import ReviewResponse
 
 
 def render_findings(
@@ -66,3 +62,31 @@ def render_json(response: ReviewResponse) -> str:
         Indented JSON string.
     """
     return response.model_dump_json(indent=2)
+
+
+def render_agent(response: ReviewResponse) -> str:
+    """Render review findings in agent-friendly plain text format.
+
+    Args:
+        response: ReviewResponse containing findings.
+
+    Returns:
+        Plain text string (no ANSI, no Rich). Empty string if no findings.
+    """
+    if not response.findings:
+        return ""
+
+    parts: list[str] = []
+    for finding in response.findings:
+        header = (
+            f"[{finding.severity.value.upper()}] "
+            f"{sanitize_output(finding.file_path)}:{finding.line_start} "
+            f"{finding.rule_id}"
+        )
+        parts.append(header)
+        parts.append(sanitize_output(finding.title))
+        if finding.suggested_fix:
+            parts.append(f"FIX: {finding.suggested_fix}")
+        parts.append("")  # blank line separator
+
+    return "\n".join(parts).rstrip("\n")

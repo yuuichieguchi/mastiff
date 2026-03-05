@@ -7,6 +7,12 @@ from pathlib import Path
 
 import click
 
+from mastiff.analysis.errors import ProviderError
+from mastiff.analysis.provider_factory import create_provider
+from mastiff.cli.output import render_agent, render_findings, render_json
+from mastiff.config.loader import load_config
+from mastiff.core.engine import ReviewEngine
+
 
 @click.command()
 @click.argument("commit_range", required=False)
@@ -20,7 +26,7 @@ import click
 @click.option(
     "--format",
     "output_format",
-    type=click.Choice(["terminal", "json"]),
+    type=click.Choice(["terminal", "json", "agent"]),
     default="terminal",
     help="Output format",
 )
@@ -43,12 +49,6 @@ def review(
     config_path: Path | None,
 ) -> None:
     """Review code changes for dangerous patterns."""
-    from mastiff.analysis.errors import ProviderError
-    from mastiff.analysis.provider_factory import create_provider
-    from mastiff.cli.output import render_findings, render_json
-    from mastiff.config.loader import load_config
-    from mastiff.core.engine import ReviewEngine
-
     config = load_config(config_path)
 
     try:
@@ -68,8 +68,14 @@ def review(
 
     if output_format == "json":
         click.echo(render_json(result.response))
+    elif output_format == "agent":
+        output = render_agent(result.response)
+        if output:
+            click.echo(output, err=True)
+        if result.response.findings:
+            raise SystemExit(2)
     else:
         render_findings(result.response, show_confidence=config.output.show_confidence)
 
     if strict and result.response.findings:
-        raise SystemExit(1)
+        raise SystemExit(2)
