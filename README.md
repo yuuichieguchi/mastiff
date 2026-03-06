@@ -350,9 +350,9 @@ pip install "mastiff[openai]"       # OpenAI provider support
 ## Development
 
 ```bash
-git clone <repo> && cd mastiff
+git clone https://github.com/yuuichieguchi/mastiff.git && cd mastiff
 uv sync --all-extras
-pytest                 # 325 tests
+pytest                 # 345 tests
 ruff check .           # lint
 mypy src/              # type check
 ```
