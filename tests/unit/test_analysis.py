@@ -180,7 +180,8 @@ class TestResponseParser:
         result = parse_response('{"schema_version": "1"}')
         assert result is None
 
-    def test_extra_fields_rejected(self):
+    def test_extra_fields_accepted(self):
+        """After switching to extra='ignore', extra fields are silently accepted."""
         from mastiff.analysis.response import parse_response
 
         data = {
@@ -189,7 +190,8 @@ class TestResponseParser:
             "extra_field": "bad",
         }
         result = parse_response(json.dumps(data))
-        assert result is None
+        assert result is not None
+        assert result.findings == []
 
     def test_markdown_extraction(self):
         from mastiff.analysis.response import parse_response
@@ -223,6 +225,113 @@ class TestResponseParser:
         }
         result = parse_response(json.dumps(data))
         assert result is None
+
+    def test_json_with_surrounding_text(self):
+        from mastiff.analysis.response import parse_response
+
+        text = (
+            'Here is the review:\n'
+            '{"schema_version": "1", "findings": []}\n'
+            'Let me know if you need changes.'
+        )
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
+
+    def test_multiple_code_blocks_picks_valid(self):
+        from mastiff.analysis.response import parse_response
+
+        text = (
+            "Some explanation:\n"
+            '```json\n{"invalid": true}\n```\n'
+            "More text:\n"
+            '```json\n{"schema_version": "1", "findings": []}\n```\n'
+        )
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
+
+    def test_extra_fields_in_findings_ignored(self):
+        from mastiff.analysis.response import parse_response
+
+        data = {
+            "schema_version": "1",
+            "findings": [
+                {
+                    "rule_id": "blocking-sync",
+                    "category": "blocking",
+                    "severity": "critical",
+                    "file_path": "main.py",
+                    "line_start": 10,
+                    "title": "Blocking call",
+                    "explanation": "time.sleep blocks",
+                    "confidence": 0.9,
+                    "notes": "extra field from LLM",
+                }
+            ],
+        }
+        result = parse_response(json.dumps(data))
+        assert result is not None
+        assert len(result.findings) == 1
+        assert result.findings[0].rule_id == "blocking-sync"
+
+    def test_extra_fields_in_response_ignored(self):
+        from mastiff.analysis.response import parse_response
+
+        data = {
+            "schema_version": "1",
+            "findings": [],
+            "summary": "No issues found",
+        }
+        result = parse_response(json.dumps(data))
+        assert result is not None
+        assert result.findings == []
+
+    def test_json_inside_string_with_braces(self):
+        from mastiff.analysis.response import parse_response
+
+        text = (
+            'Note: the pattern uses {} syntax.\n'
+            '{"schema_version": "1", "findings": []}'
+        )
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
+
+    def test_code_block_without_language(self):
+        from mastiff.analysis.response import parse_response
+
+        text = "Result:\n```\n" + json.dumps({"schema_version": "1", "findings": []}) + "\n```\n"
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
+
+    def test_array_then_valid_object(self):
+        from mastiff.analysis.response import parse_response
+
+        text = '[1, 2, 3]\n{"schema_version": "1", "findings": []}'
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
+
+    def test_truncated_response_returns_none(self):
+        from mastiff.analysis.response import parse_response
+
+        text = '{"schema_version": "1", "findings": ['
+        result = parse_response(text)
+        assert result is None
+
+    def test_japanese_text_with_json(self):
+        from mastiff.analysis.response import parse_response
+
+        text = (
+            'レビュー結果は以下の通りです：\n'
+            '{"schema_version": "1", "findings": []}\n'
+            '問題はありませんでした。'
+        )
+        result = parse_response(text)
+        assert result is not None
+        assert result.findings == []
 
 
 # ---------------------------------------------------------------------------

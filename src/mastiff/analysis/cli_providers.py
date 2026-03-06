@@ -189,8 +189,11 @@ class ClaudeCodeProvider:
         text = _extract_claude_text(result.stdout)
         response = parse_response(text)
         if response is None:
+            logger.debug("Claude CLI stdout (first 500 chars): %s", result.stdout[:500])
+            logger.debug("Extracted text (first 500 chars): %s", text[:500])
             raise CLIOutputParseError(
-                "Failed to parse claude CLI output into ReviewResponse"
+                "Failed to parse claude CLI output into ReviewResponse. "
+                f"Extracted text (first 200 chars): {text[:200]}"
             )
         return response
 
@@ -233,7 +236,10 @@ class CodexProvider:
         text = _extract_codex_text(result.stdout)
         response = parse_response(text)
         if response is None:
+            logger.debug("Codex CLI stdout (first 500 chars): %s", result.stdout[:500])
+            logger.debug("Extracted text (first 500 chars): %s", text[:500])
             raise CLIOutputParseError(
-                "Failed to parse codex CLI output into ReviewResponse"
+                "Failed to parse codex CLI output into ReviewResponse. "
+                f"Extracted text (first 200 chars): {text[:200]}"
             )
         return response
