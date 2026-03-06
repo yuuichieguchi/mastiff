@@ -1,9 +1,32 @@
 """Install command for the mastiff CLI."""
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 
 import click
+
+_MASTIFF_LINE = "mastiff review --staged --strict"
+
+
+def _atomic_write(path: Path, content: str, mode: int = 0o755) -> None:
+    """Write file atomically using tempfile + os.replace."""
+    fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(content)
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
+def _has_mastiff_line(text: str) -> bool:
+    """Check if mastiff command exists as an active (non-commented) line."""
+    return any(line.strip() == _MASTIFF_LINE for line in text.splitlines())
 
 
 @click.command()
@@ -34,7 +57,15 @@ def install(claude_code: bool, codex: bool) -> None:
         raise click.ClickException("Not a git repository")
 
     hook_path = hooks_dir / "pre-commit"
-    hook_content = "#!/bin/sh\nmastiff review --staged --strict\n"
-    hook_path.write_text(hook_content)
-    hook_path.chmod(0o755)
+
+    if hook_path.exists():
+        existing = hook_path.read_text()
+        if _has_mastiff_line(existing):
+            click.echo("mastiff pre-commit hook is already installed")
+            return
+        click.echo(f"Warning: existing pre-commit hook found at {hook_path}, appending mastiff")
+        _atomic_write(hook_path, existing.rstrip("\n") + "\n" + _MASTIFF_LINE + "\n")
+    else:
+        _atomic_write(hook_path, "#!/bin/sh\n" + _MASTIFF_LINE + "\n")
+
     click.echo(f"Installed pre-commit hook at {hook_path}")

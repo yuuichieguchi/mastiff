@@ -373,6 +373,33 @@ src/mastiff/
 └── security/        # Secret patterns, redactor, sanitizer
 ```
 
+## FAQ
+
+**Q: Pre-commit hook blocks my commit. How do I skip it?**
+
+```bash
+git commit --no-verify -m "your message"
+```
+
+`--no-verify` is a standard git option that skips all git hooks. Use it when you've reviewed the findings and want to commit anyway.
+
+**Q: How do I uninstall the pre-commit hook?**
+
+```bash
+rm .git/hooks/pre-commit
+```
+
+> **Note:** If you or another tool (husky, pre-commit framework, etc.) added other commands to the same file, this deletes them too. Check the file contents with `cat .git/hooks/pre-commit` before removing.
+
+**Q: Can I use mastiff without installing hooks?**
+
+Yes. You can always run reviews manually:
+
+```bash
+mastiff review --staged
+mastiff review HEAD~3..HEAD
+```
+
 ## License
 
 [MIT](LICENSE)

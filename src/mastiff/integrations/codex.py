@@ -5,6 +5,8 @@ import os
 import tempfile
 from typing import TYPE_CHECKING
 
+import click
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -33,6 +35,11 @@ def install_hooks(project_dir: Path) -> None:
             return  # Already installed (idempotent)
         # Backup existing hook
         backup_path = hooks_dir / "post-commit.pre-mastiff"
+        if backup_path.exists():
+            raise click.ClickException(
+                f"Backup {backup_path} already exists. "
+                "Remove it manually before re-installing."
+            )
         backup_path.write_text(existing)
         backup_path.chmod(0o755)
         # Create chained hook
