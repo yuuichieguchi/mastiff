@@ -82,33 +82,69 @@ def _extract_claude_text(stdout: str) -> str:
     return stdout
 
 
+def _extract_codex_error(stdout: str) -> str:
+    """Extract error messages from codex JSONL output.
+
+    When codex exits with non-zero and empty stderr, the error info
+    lives in stdout as JSONL events with ``"type": "error"`` or
+    ``"type": "turn.failed"``.
+    """
+    messages: list[str] = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            data = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        if data.get("type") == "error" and "message" in data:
+            messages.append(data["message"])
+        elif data.get("type") == "turn.failed":
+            err = data.get("error", {})
+            if isinstance(err, dict) and "message" in err:
+                messages.append(err["message"])
+    return "; ".join(messages) if messages else "(no error details in stdout)"
+
+
 def _extract_codex_text(stdout: str) -> str:
     """Extract the review text from ``codex exec --json`` output.
 
-    The Codex CLI emits JSON objects with a ``"content"`` list.  We look for
-    the last item whose ``"type"`` is ``"text"`` and return its ``"text"``
-    field.
+    The Codex CLI emits JSONL events.  We handle two known formats:
 
-    Falls back to returning *stdout* as-is when no structured result is found.
+    1. ``{"content": [{"type": "text", "text": "..."}]}`` — older/wrapper format
+    2. ``{"type": "item.completed", "item": {"text": "..."}}`` — streaming JSONL
+
+    We return the *last* text found across all lines.  Falls back to returning
+    *stdout* as-is when no structured result is found.
     """
     last_text: str | None = None
 
-    def _try_extract_from_content(obj: object) -> str | None:
+    def _try_extract(obj: object) -> str | None:
         if not isinstance(obj, dict):
             return None
+        # Format 1: content list
         content = obj.get("content")
-        if not isinstance(content, list):
-            return None
-        found: str | None = None
-        for item in content:
-            if isinstance(item, dict) and item.get("type") == "text" and "text" in item:
-                found = item["text"]
-        return found
+        if isinstance(content, list):
+            found: str | None = None
+            for item in content:
+                if isinstance(item, dict) and item.get("type") == "text" and "text" in item:
+                    found = item["text"]
+            if found is not None:
+                return found
+        # Format 2: item.completed events
+        if obj.get("type") == "item.completed":
+            item = obj.get("item")
+            if isinstance(item, dict) and "text" in item:
+                return str(item["text"])
+        return None
 
     # Try single JSON object
     try:
         data = json.loads(stdout)
-        text = _try_extract_from_content(data)
+        text = _try_extract(data)
         if text is not None:
             last_text = text
     except (json.JSONDecodeError, ValueError):
@@ -124,7 +160,7 @@ def _extract_codex_text(stdout: str) -> str:
             continue
         try:
             data = json.loads(line)
-            text = _try_extract_from_content(data)
+            text = _try_extract(data)
             if text is not None:
                 last_text = text
         except (json.JSONDecodeError, ValueError):
@@ -229,8 +265,11 @@ class CodexProvider:
             raise ProviderError(f"CLI timed out after {self._timeout}s") from None
         except SubprocessError as exc:
             cmd_str = shlex.join(cmd)
+            detail = exc.stderr.strip()
+            if not detail:
+                detail = _extract_codex_error(exc.stdout)
             raise ProviderError(
-                f"codex CLI failed (cmd: {cmd_str}): {exc.stderr.strip()}"
+                f"codex CLI failed (cmd: {cmd_str}): {detail}"
             ) from None
 
         text = _extract_codex_text(result.stdout)

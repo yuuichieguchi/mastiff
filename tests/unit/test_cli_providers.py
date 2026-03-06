@@ -173,6 +173,33 @@ class TestExtractClaudeText:
 # ===========================================================================
 
 
+class TestExtractCodexError:
+    """Tests for extracting error messages from codex JSONL output."""
+
+    def test_should_extract_error_message_from_jsonl(self) -> None:
+        from mastiff.analysis.cli_providers import _extract_codex_error
+
+        stdout = (
+            '{"type":"thread.started","thread_id":"abc"}\n'
+            '{"type":"error","message":"model not supported"}\n'
+            '{"type":"turn.failed","error":{"message":"model not supported"}}\n'
+        )
+        result = _extract_codex_error(stdout)
+        assert "model not supported" in result
+
+    def test_should_return_fallback_when_no_errors(self) -> None:
+        from mastiff.analysis.cli_providers import _extract_codex_error
+
+        result = _extract_codex_error('{"type":"thread.started"}\n')
+        assert result == "(no error details in stdout)"
+
+    def test_should_return_fallback_for_empty_stdout(self) -> None:
+        from mastiff.analysis.cli_providers import _extract_codex_error
+
+        result = _extract_codex_error("")
+        assert result == "(no error details in stdout)"
+
+
 class TestExtractCodexText:
     """Tests for parsing codex CLI JSON output."""
 
@@ -214,6 +241,25 @@ class TestExtractCodexText:
         )
         stdout = f"{line1}\n{line2}"
         assert _extract_codex_text(stdout) == "final codex output"
+
+    def test_should_extract_text_from_item_completed_event(self) -> None:
+        """
+        Given: JSONL with item.completed event containing agent_message text
+        When: _extract_codex_text is called
+        Then: returns the text from item.text
+        """
+        from mastiff.analysis.cli_providers import _extract_codex_text
+
+        stdout = (
+            '{"type":"thread.started","thread_id":"abc"}\n'
+            '{"type":"turn.started"}\n'
+            '{"type":"item.completed","item":{"id":"item_0","type":"agent_message",'
+            '"text":"{\\"schema_version\\": \\"1\\", \\"findings\\": []}"}}\n'
+            '{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":10}}\n'
+        )
+        result = _extract_codex_text(stdout)
+        assert '"schema_version"' in result
+        assert '"findings"' in result
 
     def test_should_return_text_as_is_when_not_json(self) -> None:
         """
@@ -548,6 +594,37 @@ class TestCodexProvider:
                 ),
             ),
             pytest.raises(ProviderError),
+        ):
+            await provider.review("prompt")
+
+    @pytest.mark.asyncio
+    async def test_review_should_include_stdout_error_when_stderr_empty(self) -> None:
+        """
+        Given: codex exits non-zero with empty stderr but error info in stdout
+        When: review() is called
+        Then: ProviderError message includes extracted error from stdout
+        """
+        from mastiff._internal.subprocess import SubprocessError
+        from mastiff.analysis.cli_providers import CodexProvider
+        from mastiff.analysis.errors import ProviderError
+
+        stdout_jsonl = (
+            '{"type":"error","message":"model o4-mini not supported"}\n'
+            '{"type":"turn.failed","error":{"message":"model o4-mini not supported"}}\n'
+        )
+        provider = CodexProvider(model="o4-mini", timeout=60)
+
+        with (
+            patch(
+                "mastiff.analysis.cli_providers.run_command",
+                side_effect=SubprocessError(
+                    args=["codex", "exec", "--json", "--model", "o4-mini", "-"],
+                    returncode=1,
+                    stdout=stdout_jsonl,
+                    stderr="",
+                ),
+            ),
+            pytest.raises(ProviderError, match="model o4-mini not supported"),
         ):
             await provider.review("prompt")
 
