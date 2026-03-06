@@ -349,10 +349,10 @@ class TestClaudeCodeProvider:
             "-p",
             "--output-format",
             "json",
-            "--model",
-            "my-model",
             "--tools",
             "",
+            "--model",
+            "my-model",
         ]
         actual_cmd = call_args[0][0]
         assert (

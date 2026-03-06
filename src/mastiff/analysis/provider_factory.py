@@ -22,13 +22,17 @@ _API_PROVIDER_DEFAULTS: dict[str, tuple[str, str]] = {
     "openai": ("OPENAI_API_KEY", "gpt-4.1"),
 }
 
-_CLI_PROVIDER_DEFAULTS: dict[str, tuple[str, str]] = {
+_CLI_PROVIDER_DEFAULTS: dict[str, tuple[str, str | None]] = {
     # (cli_command_name, default_model)
-    "claude-code": ("claude", "claude-sonnet-4-20250514"),
-    "codex": ("codex", "o4-mini"),
+    # None means "let the CLI use its own configured default"
+    "claude-code": ("claude", None),
+    "codex": ("codex", None),
 }
 
-_ALL_PROVIDERS = {**_API_PROVIDER_DEFAULTS, **_CLI_PROVIDER_DEFAULTS}
+_ALL_PROVIDERS: dict[str, tuple[str, str | None]] = {
+    **_API_PROVIDER_DEFAULTS,
+    **_CLI_PROVIDER_DEFAULTS,
+}
 
 
 def default_api_key_env(provider: str) -> str:
@@ -36,7 +40,7 @@ def default_api_key_env(provider: str) -> str:
     return _API_PROVIDER_DEFAULTS[provider][0]
 
 
-def default_model(provider: str) -> str:
+def default_model(provider: str) -> str | None:
     """Return the default model for a provider."""
     return _ALL_PROVIDERS[provider][1]
 
@@ -103,16 +107,16 @@ def create_provider(config: MastiffConfig) -> LLMProvider:
         if config.api.provider is not None and not check_cli_available(cli_cmd):
             raise CLINotFoundError(f"CLI '{cli_cmd}' not found on PATH or not functional")
 
-        model = config.api.model
+        cli_model: str | None = config.api.model
         anthropic_default = _API_PROVIDER_DEFAULTS["anthropic"][1]
-        if model == anthropic_default and provider_name != "anthropic":
-            model = cli_default_model
+        if cli_model == anthropic_default and provider_name != "anthropic":
+            cli_model = cli_default_model
 
         timeout = config.cost.max_api_seconds
 
         if provider_name == "claude-code":
-            return ClaudeCodeProvider(model=model, timeout=timeout)
-        return CodexProvider(model=model, timeout=timeout)
+            return ClaudeCodeProvider(model=cli_model, timeout=timeout)
+        return CodexProvider(model=cli_model, timeout=timeout)
 
     # --- API providers ---
     env_var = config.api.api_key_env
@@ -123,11 +127,11 @@ def create_provider(config: MastiffConfig) -> LLMProvider:
     if not api_key:
         raise MissingAPIKeyError(f"Set {env_var} environment variable")
 
-    model = config.api.model
+    api_model = config.api.model
     anthropic_default = _API_PROVIDER_DEFAULTS["anthropic"][1]
-    if model == anthropic_default and provider_name != "anthropic":
-        model = default_model(provider_name)
+    if api_model == anthropic_default and provider_name != "anthropic":
+        api_model = default_model(provider_name) or api_model
 
     if provider_name == "anthropic":
-        return AnthropicProvider(api_key=api_key, model=model)
-    return OpenAIProvider(api_key=api_key, model=model)
+        return AnthropicProvider(api_key=api_key, model=api_model)
+    return OpenAIProvider(api_key=api_key, model=api_model)

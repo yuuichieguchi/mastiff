@@ -183,7 +183,7 @@ class ClaudeCodeProvider:
 
     supports_runtime_model_override: bool = False
 
-    def __init__(self, model: str, timeout: int) -> None:
+    def __init__(self, model: str | None, timeout: int) -> None:
         self._model = model
         self._timeout = timeout
 
@@ -207,11 +207,11 @@ class ClaudeCodeProvider:
             "-p",
             "--output-format",
             "json",
-            "--model",
-            use_model,
             "--tools",
             "",
         ]
+        if use_model:
+            cmd.extend(["--model", use_model])
         try:
             result = run_command(cmd, timeout=self._timeout, input_text=prompt, check=True)
         except SubprocessTimeoutError:
@@ -239,7 +239,7 @@ class CodexProvider:
 
     supports_runtime_model_override: bool = False
 
-    def __init__(self, model: str, timeout: int) -> None:
+    def __init__(self, model: str | None, timeout: int) -> None:
         self._model = model
         self._timeout = timeout
 
@@ -258,7 +258,10 @@ class CodexProvider:
             CLIOutputParseError: When CLI output cannot be parsed.
         """
         use_model = model or self._model
-        cmd = ["codex", "exec", "--json", "--model", use_model, "-"]
+        cmd = ["codex", "exec", "--json"]
+        if use_model:
+            cmd.extend(["--model", use_model])
+        cmd.append("-")
         try:
             result = run_command(cmd, timeout=self._timeout, input_text=prompt, check=True)
         except SubprocessTimeoutError:
