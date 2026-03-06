@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DEFAULT_CONFIG: dict[str, object] = {
     "api": {
-        "model": "claude-opus-4-20250514",
+        "model": None,
         "max_tokens": 4096,
         "temperature": 0.2,
         "api_key_env": "ANTHROPIC_API_KEY",

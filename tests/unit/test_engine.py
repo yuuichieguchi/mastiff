@@ -191,7 +191,7 @@ class TestReviewEngineProviderCalls:
         with patch("mastiff.core.engine.collect_diff", return_value=hunks):
             result = await engine.review(staged=True)
 
-        assert result.model == config.api.model
+        assert result.model == "auto"
 
     async def test_result_has_latency(self):
         from mastiff.core.engine import ReviewEngine

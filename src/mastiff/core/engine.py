@@ -68,7 +68,7 @@ class ReviewEngine:
                 input_tokens=0,
                 output_tokens=0,
                 latency_ms=0.0,
-                model=self.config.api.model,
+                model=self.config.api.model or "auto",
                 estimated_cost_usd=0.0,
             )
 
@@ -114,6 +114,6 @@ class ReviewEngine:
             input_tokens=0,
             output_tokens=0,
             latency_ms=api_ms,
-            model=self.config.api.model,
+            model=self.config.api.model or "auto",
             estimated_cost_usd=0.0,
         )

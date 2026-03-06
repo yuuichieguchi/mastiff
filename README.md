@@ -259,7 +259,7 @@ This creates `mastiff.yaml` with documented defaults. Key settings:
 ```yaml
 api:
   provider: null                      # Auto-detect (claude-code, codex, anthropic, openai)
-  model: claude-opus-4-20250514      # Model to use
+  model: null                         # null = use provider's default (see below)
 
 detection:
   min_confidence: 0.6           # Minimum confidence to report
@@ -272,6 +272,25 @@ security:
 
 cost:
   max_cost_usd_per_run: 1.00   # Per-run cost limit
+```
+
+**Model configuration:**
+
+When `api.model` is `null` (default), each provider uses its own default:
+
+| Provider | Default model |
+|----------|---------------|
+| `claude-code` | Whatever your `claude` CLI is configured to use |
+| `codex` | Whatever your `codex` CLI is configured to use (`~/.codex/config.toml`) |
+| `anthropic` | `claude-opus-4-20250514` |
+| `openai` | `gpt-4.1` |
+
+To override, set `api.model` to any model your provider supports:
+
+```yaml
+api:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
 ```
 
 All config models use Pydantic `extra="forbid"`, so typos in config keys are caught immediately.

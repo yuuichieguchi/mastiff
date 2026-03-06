@@ -36,7 +36,7 @@ class TestDefaultConfig:
         from mastiff.config.defaults import DEFAULT_CONFIG
 
         api = DEFAULT_CONFIG["api"]
-        assert api["model"] == "claude-opus-4-20250514"
+        assert api["model"] is None
         assert api["max_tokens"] == 4096
         assert api["temperature"] == 0.2
         assert api["api_key_env"] == "ANTHROPIC_API_KEY"
@@ -129,7 +129,7 @@ class TestApiConfig:
         from mastiff.config.schema import ApiConfig
 
         cfg = ApiConfig()
-        assert cfg.model == "claude-opus-4-20250514"
+        assert cfg.model is None
         assert cfg.max_tokens == 4096
         assert cfg.temperature == 0.2
         assert cfg.api_key_env == "ANTHROPIC_API_KEY"
@@ -441,7 +441,7 @@ class TestMastiffConfig:
         from mastiff.config.schema import MastiffConfig
 
         cfg = MastiffConfig()
-        assert cfg.api.model == "claude-opus-4-20250514"
+        assert cfg.api.model is None
         assert cfg.context.max_depth == 2
         assert cfg.detection.min_confidence == 0.6
         assert cfg.security.entropy_detection is True
@@ -530,7 +530,7 @@ class TestLoadConfig:
         cfg = load_config(path=config_file)
         assert cfg.cost.max_cost_usd_per_run == 5.0
         # Other defaults remain
-        assert cfg.api.model == "claude-opus-4-20250514"
+        assert cfg.api.model is None
         assert cfg.context.max_depth == 2
 
     def test_invalid_yaml_raises_error(self, tmp_path: Path):

@@ -12,7 +12,7 @@ class ApiConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    model: str = "claude-opus-4-20250514"
+    model: str | None = None
     max_tokens: int = Field(default=4096, ge=1)
     temperature: float = Field(default=0.2, ge=0.0, le=1.0)
     api_key_env: str = "ANTHROPIC_API_KEY"
