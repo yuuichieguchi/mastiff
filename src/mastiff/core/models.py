@@ -23,7 +23,7 @@ class DetectionCategory(Enum):
 class FindingSchema(BaseModel):
     """A single finding detected during code review."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     schema_version: Literal["1"] = "1"
     rule_id: str
@@ -44,7 +44,7 @@ class FindingSchema(BaseModel):
 class ReviewResponse(BaseModel):
     """Structured response from LLM review containing findings."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     schema_version: Literal["1"] = "1"
     findings: list[FindingSchema]

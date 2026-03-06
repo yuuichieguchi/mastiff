@@ -46,21 +46,22 @@ class TestFindingSchema:
         assert finding.column_start is None
         assert finding.symbol is None
 
-    def test_finding_forbids_extra_fields(self):
+    def test_finding_ignores_extra_fields(self):
         from mastiff.core.models import DetectionCategory, FindingSchema
         from mastiff.core.severity import Severity
-        with pytest.raises(ValidationError):
-            FindingSchema(
-                rule_id="test",
-                category=DetectionCategory.BLOCKING,
-                severity=Severity.WARNING,
-                file_path="x.py",
-                line_start=1,
-                title="t",
-                explanation="e",
-                confidence=0.5,
-                unknown_field="bad",
-            )
+        finding = FindingSchema(
+            rule_id="test",
+            category=DetectionCategory.BLOCKING,
+            severity=Severity.WARNING,
+            file_path="x.py",
+            line_start=1,
+            title="t",
+            explanation="e",
+            confidence=0.5,
+            unknown_field="bad",
+        )
+        assert finding.rule_id == "test"
+        assert not hasattr(finding, "unknown_field")
 
     def test_confidence_bounds(self):
         from mastiff.core.models import DetectionCategory, FindingSchema
@@ -121,10 +122,11 @@ class TestReviewResponse:
         assert resp.findings == []
         assert resp.schema_version == "1"
 
-    def test_response_forbids_extra_fields(self):
+    def test_response_ignores_extra_fields(self):
         from mastiff.core.models import ReviewResponse
-        with pytest.raises(ValidationError):
-            ReviewResponse(findings=[], extra="bad")
+        resp = ReviewResponse(findings=[], extra="bad")
+        assert resp.findings == []
+        assert not hasattr(resp, "extra")
 
     def test_response_with_findings(self):
         from mastiff.core.models import DetectionCategory, FindingSchema, ReviewResponse

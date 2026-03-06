@@ -24,7 +24,8 @@ Only report issues you are confident about. Do not report style issues or \
 minor improvements."""
 
 _OUTPUT_SCHEMA = """\
-Respond with a JSON object matching this schema:
+Respond with ONLY a JSON object matching this schema — no explanation, \
+no markdown, no text before or after the JSON:
 {
   "schema_version": "1",
   "findings": [
@@ -43,7 +44,9 @@ Respond with a JSON object matching this schema:
   ]
 }
 
-If no issues are found, return: {"schema_version": "1", "findings": []}"""
+If no issues are found, return: {"schema_version": "1", "findings": []}
+
+IMPORTANT: Output ONLY valid JSON. Do not wrap in code blocks. Do not add any text."""
 
 
 class PromptBuilder:
