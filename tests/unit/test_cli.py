@@ -173,32 +173,32 @@ class TestInitCommand:
         assert "configuration" in result.output.lower() or "mastiff.yaml" in result.output
 
 
-class TestInstallCommand:
-    """Tests for the install subcommand."""
+class TestSetupCommand:
+    """Tests for the setup subcommand."""
 
-    def test_install_creates_hook(self, tmp_path, monkeypatch):
+    def test_setup_creates_hook(self, tmp_path, monkeypatch):
         from mastiff.cli.app import main
 
         monkeypatch.chdir(tmp_path)
         hooks_dir = tmp_path / ".git" / "hooks"
         hooks_dir.mkdir(parents=True)
         runner = CliRunner()
-        result = runner.invoke(main, ["install"])
+        result = runner.invoke(main, ["setup"])
         assert result.exit_code == 0
         hook_path = hooks_dir / "pre-commit"
         assert hook_path.exists()
         assert "mastiff" in hook_path.read_text()
 
-    def test_install_fails_without_git(self, tmp_path, monkeypatch):
+    def test_setup_fails_without_git(self, tmp_path, monkeypatch):
         from mastiff.cli.app import main
 
         monkeypatch.chdir(tmp_path)
         runner = CliRunner()
-        result = runner.invoke(main, ["install"])
+        result = runner.invoke(main, ["setup"])
         assert result.exit_code != 0
         assert "git" in result.output.lower()
 
-    def test_install_hook_is_executable(self, tmp_path, monkeypatch):
+    def test_setup_hook_is_executable(self, tmp_path, monkeypatch):
         import os
 
         from mastiff.cli.app import main
@@ -207,48 +207,57 @@ class TestInstallCommand:
         hooks_dir = tmp_path / ".git" / "hooks"
         hooks_dir.mkdir(parents=True)
         runner = CliRunner()
-        runner.invoke(main, ["install"])
+        runner.invoke(main, ["setup"])
         hook_path = hooks_dir / "pre-commit"
         assert os.access(hook_path, os.X_OK)
 
-    def test_install_claude_code_creates_hooks(self, tmp_path, monkeypatch):
-        """install --claude-code creates .claude/hooks/mastiff-review.sh."""
+    def test_setup_claude_code_creates_hooks(self, tmp_path, monkeypatch):
+        """setup --claude-code creates .claude/hooks/mastiff-review.sh."""
         from mastiff.cli.app import main
 
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".claude").mkdir(parents=True, exist_ok=True)
         runner = CliRunner()
-        result = runner.invoke(main, ["install", "--claude-code"])
+        result = runner.invoke(main, ["setup", "--claude-code"])
         assert result.exit_code == 0
         hook_path = tmp_path / ".claude" / "hooks" / "mastiff-review.sh"
         assert hook_path.exists()
 
-    def test_install_codex_creates_hooks(self, tmp_path, monkeypatch):
-        """install --codex creates .git/hooks/post-commit."""
+    def test_setup_codex_creates_hooks(self, tmp_path, monkeypatch):
+        """setup --codex creates .git/hooks/post-commit."""
         from mastiff.cli.app import main
 
         monkeypatch.chdir(tmp_path)
         hooks_dir = tmp_path / ".git" / "hooks"
         hooks_dir.mkdir(parents=True)
         runner = CliRunner()
-        result = runner.invoke(main, ["install", "--codex"])
+        result = runner.invoke(main, ["setup", "--codex"])
         assert result.exit_code == 0
         hook_path = hooks_dir / "post-commit"
         assert hook_path.exists()
 
-    def test_install_no_flags_still_works(self, tmp_path, monkeypatch):
-        """install (no flags) still creates pre-commit hook as before."""
+    def test_setup_no_flags_still_works(self, tmp_path, monkeypatch):
+        """setup (no flags) still creates pre-commit hook as before."""
         from mastiff.cli.app import main
 
         monkeypatch.chdir(tmp_path)
         hooks_dir = tmp_path / ".git" / "hooks"
         hooks_dir.mkdir(parents=True)
         runner = CliRunner()
-        result = runner.invoke(main, ["install"])
+        result = runner.invoke(main, ["setup"])
         assert result.exit_code == 0
         hook_path = hooks_dir / "pre-commit"
         assert hook_path.exists()
         assert "mastiff" in hook_path.read_text()
+
+    def test_install_command_removed(self):
+        """The old 'install' command should no longer exist."""
+        from mastiff.cli.app import main
+
+        runner = CliRunner()
+        result = runner.invoke(main, ["install"])
+        assert result.exit_code != 0
+        assert "No such command" in result.output
 
 
 class TestBaselineCommand:

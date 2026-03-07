@@ -1,4 +1,4 @@
-"""Install command for the mastiff CLI."""
+"""Setup command for the mastiff CLI."""
 from __future__ import annotations
 
 import os
@@ -29,11 +29,11 @@ def _has_mastiff_line(text: str) -> bool:
     return any(line.strip() == _MASTIFF_LINE for line in text.splitlines())
 
 
-@click.command()
+@click.command(name="setup")
 @click.option("--claude-code", is_flag=True, help="Install Claude Code PostToolUse hooks")
 @click.option("--codex", is_flag=True, help="Install Codex CLI post-commit hook")
-def install(claude_code: bool, codex: bool) -> None:
-    """Install mastiff hooks for git or AI agents."""
+def setup(claude_code: bool, codex: bool) -> None:
+    """Set up mastiff hooks for git or AI agents."""
     if claude_code:
         from mastiff.integrations.claude_code import install_hooks
 

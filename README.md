@@ -167,7 +167,7 @@ mastiff watch --profile quick --format agent
 
 ```bash
 # Install the pre-commit hook
-mastiff install
+mastiff setup
 
 # Commits are automatically reviewed
 git commit -m "feat: add user endpoint"
@@ -191,7 +191,7 @@ Mastiff is designed to review LLM-generated code. When using [Claude Code](https
 **Automatic feedback loop (recommended):**
 
 ```bash
-mastiff install --claude-code
+mastiff setup --claude-code
 ```
 
 This installs a PostToolUse hook that automatically reviews every file Claude Code writes or edits. When issues are found, they are fed back to Claude Code via stderr, creating an automatic fix loop.
@@ -201,7 +201,7 @@ This installs a PostToolUse hook that automatically reviews every file Claude Co
 Install the hook once and every commit Claude Code creates is automatically reviewed:
 
 ```bash
-mastiff install
+mastiff setup
 ```
 
 Claude Code commits through git, so the pre-commit hook runs transparently on every commit. Critical findings block the commit, giving you a chance to review before the code lands.
@@ -227,7 +227,7 @@ mastiff review main..HEAD --profile deep
 ### With Codex CLI
 
 ```bash
-mastiff install --codex
+mastiff setup --codex
 ```
 
 Installs a git `post-commit` hook. Since Codex CLI applies changes via commits, every commit is automatically reviewed. Existing post-commit hooks are preserved and chained.

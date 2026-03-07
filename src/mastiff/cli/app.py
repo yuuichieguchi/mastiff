@@ -6,9 +6,9 @@ import click
 
 from mastiff.cli.commands.baseline import baseline
 from mastiff.cli.commands.init import init
-from mastiff.cli.commands.install import install
 from mastiff.cli.commands.review import review
 from mastiff.cli.commands.server import server
+from mastiff.cli.commands.setup import setup
 from mastiff.cli.commands.watch import watch
 
 
@@ -20,7 +20,7 @@ def main() -> None:
 
 main.add_command(review)
 main.add_command(init)
-main.add_command(install)
+main.add_command(setup)
 main.add_command(baseline)
 main.add_command(server)
 main.add_command(watch)
